@@ -1,165 +1,65 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>David Haks Store – Login con Estilo</title>
+<meta charset="UTF-8">
+<title>Panel Admin | Firestore</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body{margin:0;font-family:'Poppins',sans-serif;background:radial-gradient(circle at top,#060b20 0%,#000 100%);color:white;text-align:center;overflow-x:hidden}
-h1{font-size:2.5em;color:#00e5ff;text-shadow:0 0 20px #00e5ff}
-h2{color:#ff007a;text-shadow:0 0 20px #ff007a;margin-top:-10px}
-input{width:80%;max-width:300px;padding:12px;border:none;border-radius:10px;text-align:center;margin:8px 0;font-size:1em}
-button{padding:12px;width:80%;max-width:300px;margin:10px auto;border:none;border-radius:10px;font-weight:bold;color:white;font-size:1.1em;cursor:pointer;transition:.3s}
-.btn-primary{background:linear-gradient(90deg,#0099ff,#00e5ff)}
-.btn-whatsapp{background:linear-gradient(90deg,#ff007a,#ff66cc)}
-.product{background:rgba(255,255,255,.05);border-radius:15px;padding:25px;margin:20px auto;width:85%;max-width:400px;box-shadow:0 0 20px rgba(0,229,255,.2)}
-.product img{width:150px;margin-bottom:10px;border-radius:10px;box-shadow:0 0 25px #00e5ff}
-.price{color:#00e5ff;font-weight:bold;margin:8px 0;font-size:1.1em}
-footer{margin-top:40px;color:#666;font-size:.9em}
-#login,#home,#store{transition:all .6s ease}
-#home,#store{display:none}
-#g_id_onload,#g_id_signin{display:flex;justify-content:center;margin-top:15px}
-.saldo-box{background:rgba(255,255,255,.05);padding:20px;border-radius:15px;box-shadow:0 0 15px rgba(0,229,255,.2);margin:20px auto;width:85%;max-width:400px}
-
-/* 🔥 EFECTO ANIMADO DE BOTONES */
-@keyframes pulseGlow {
-  0% { transform: scale(1); box-shadow: 0 0 15px rgba(0,229,255,0.5); }
-  50% { transform: scale(1.07); box-shadow: 0 0 25px rgba(0,229,255,0.9); }
-  100% { transform: scale(1); box-shadow: 0 0 15px rgba(0,229,255,0.5); }
-}
-@keyframes neonFlow {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
-}
-button {
-  background-size: 200% auto;
-  animation: neonFlow 4s linear infinite alternate, pulseGlow 3s ease-in-out infinite;
-  transition: all 0.3s ease;
-}
-button:hover {
-  transform: scale(1.08);
-  filter: brightness(1.2);
-}
-button:active {
-  transform: scale(0.96);
-  filter: brightness(0.9);
-}
+body{background:#070b14;color:#fff;font-family:Arial}
+.card{background:#0e1627;padding:16px;border-radius:14px;margin:14px}
+.user{background:#121c33;padding:10px;border-radius:10px;margin-top:8px}
+h2{color:#00ffcc;text-align:center}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login">
-  <h1>David Haks</h1>
-  <h2>Store</h2>
-  <p>Inicia sesión con tu cuenta</p>
-
-  <input type="text" id="usuario" placeholder="Usuario" />
-  <input type="password" id="clave" placeholder="Contraseña" />
-  <button class="btn-primary" onclick="loginManual()">Entrar</button>
-
-  <footer>© 2025 David Haks Store</footer>
+<div class="card">
+  <h2>👥 USUARIOS (FIRESTORE)</h2>
+  <div id="lista">Cargando...</div>
 </div>
 
-<!-- HOME -->
-<div id="home">
-  <h1>🏠 Bienvenido a David Haks Store</h1>
-  <p>Administra tu saldo y accede a los productos</p>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, getDocs }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  <div class="saldo-box">
-    <h2>💰 Tu Saldo</h2>
-    <p id="saldo">S/ 0.00</p>
-    <button class="btn-primary" onclick="recargarSaldo()">➕ Recargar Saldo</button>
-  </div>
+const firebaseConfig = {
+  apiKey: "AIzaSyAKrBTAkJGhB9s3E3MExqzj8mtXgKYsWRc",
+  authDomain: "davidstore-51f7f.firebaseapp.com",
+  projectId: "davidstore-51f7f",
+  storageBucket: "davidstore-51f7f.firebasestorage.app",
+  messagingSenderId: "363278778609",
+  appId: "1:363278778609:web:0714ebb6903b931a616950"
+};
 
-  <button class="btn-whatsapp" onclick="irTienda()">🛍️ Ir a la Tienda</button>
-  <button class="btn-primary" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  <footer>© 2025 David Haks Store</footer>
-</div>
-
-<!-- TIENDA -->
-<div id="store">
-  <h1>🛒 Tienda – David Haks Store</h1>
-
-  <div class="product">
-    <img src="david.jpeg" alt="david.jpeg" />
-    <h2>BR MODS SAFE ✅️🇵🇪</h2>
-    <p class="price">
-      1 Día: S/ 5 <br />
-      7 Días: S/ 20 <br />
-      15 Días: S/ 34 <br />
-      30 Días: S/ 67
-    </p>
-
-    <button class="btn-whatsapp"
-      onclick="window.location.href='https://wa.me/51922184802?text=Hola,%20quiero%20comprar%20BR%20MODS%20SAFE%20✅️'">
-      💬 Comprar por WhatsApp
-    </button>
-
-    <button class="btn-primary"
-      onclick="window.location.href='https://wa.me/51922184802?text=Hola,%20te%20envío%20el%20comprobante%20de%20Yape%20por%20la%20compra%20de%20BR%20MODS%20SAFE%20✅️'">
-      💸 Pagar con Yape
-    </button>
-  </div>
-
-  <div class="product">
-    <img src="drip.jpeg" alt="Drip Client" />
-    <h2>Drip Client Actualizado 💧</h2>
-    <p class="price">
-      1 Día: S/ 7.50 <br />
-      7 Días: S/ 15.50 <br />
-      15 Días: S/ 30.50 <br />
-      30 Días: S/ 60
-    </p>
-
-    <button class="btn-whatsapp"
-      onclick="window.location.href='https://wa.me/51922184802?text=Hola,%20quiero%20comprar%20Drip%20Client%20Actualizado%20💧'">
-      💬 Comprar por WhatsApp
-    </button>
-
-    <button class="btn-primary"
-      onclick="window.location.href='https://wa.me/51922184802?text=Hola,%20te%20envío%20el%20comprobante%20de%20Yape%20por%20la%20compra%20de%20Drip%20Client%20Actualizado%20💧'">
-      💸 Pagar con Yape
-    </button>
-  </div>
-
-  <button class="btn-whatsapp" onclick="volverHome()">🏠 Volver al Home</button>
-  <footer>© 2025 David Haks Store — Pagos seguros por Yape 🇵🇪</footer>
-</div>
-
-<script>
-let saldo = 0;
-function loginManual(){
-  const usuario=document.getElementById('usuario').value;
-  const clave=document.getElementById('clave').value;
-  if(usuario && clave){
-    document.getElementById('login').style.display='none';
-    document.getElementById('home').style.display='block';
-  }else{
-    alert("Completa usuario y contraseña");
+onAuthStateChanged(auth, async(user)=>{
+  if(!user){
+    document.getElementById("lista").innerText="❌ No logueado";
+    return;
   }
-}
-function recargarSaldo(){
-  const mensaje = "Hola, quiero recargar saldo en David Haks Store 💰";
-  window.location.href = "https://wa.me/51922184802?text=" + encodeURIComponent(mensaje);
-}
-function irTienda(){
-  document.getElementById("home").style.display="none";
-  document.getElementById("store").style.display="block";
-}
-function volverHome(){
-  document.getElementById("store").style.display="none";
-  document.getElementById("home").style.display="block";
-}
-function cerrarSesion(){
-  if(confirm("¿Seguro que deseas cerrar sesión?")){
-    document.getElementById("home").style.display="none";
-    document.getElementById("store").style.display="none";
-    document.getElementById("login").style.display="block";
-  }
-}
+
+  const snap = await getDocs(collection(db,"users"));
+  let html="";
+
+  snap.forEach(d=>{
+    const u = d.data();
+    html += `
+      <div class="user">
+        📧 ${u.email}<br>
+        💰 Saldo: ${u.saldo ?? 0}<br>
+        🆔 ${d.id}
+      </div>
+    `;
+  });
+
+  document.getElementById("lista").innerHTML = html || "Sin datos";
+});
 </script>
-
 </body>
 </html>
